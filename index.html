@@ -5,88 +5,272 @@
 <meta name="viewport" content="width=device-width,initial-scale=1">
 <title>강남랜드 — 단계형 코인 게임</title>
 <style>
-@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;700&display=swap');
 :root{
-  --bg:#0a0a1a;
-  --panel:#101030;
-  --accent:#0ff;
-  --accent2:#58f;
+  --bg:#061427;
+  --panel:#0b1f3a;
+  --accent:#0ea5ff;
+  --accent2:#00b4ff;
   --muted:#9fb6d9;
-  --glow:#0ff;
 }
-*{box-sizing:border-box;}
-html,body{margin:0;padding:0;height:100%;font-family:Inter,sans-serif;background:linear-gradient(180deg,#050518,#0a0a1a);color:#e6f0ff;overflow-x:hidden;}
-.container{max-width:1200px;margin:20px auto;padding:20px;display:grid;grid-template-columns:320px 1fr;gap:20px;}
-.panel{background:linear-gradient(135deg,rgba(0,255,255,0.05),rgba(0,255,255,0.02));border-radius:14px;padding:20px;border:1px solid rgba(0,255,255,0.2);box-shadow:0 0 40px rgba(0,255,255,0.5);animation:glowPanel 2s infinite alternate;}
-@keyframes glowPanel{0%{box-shadow:0 0 20px rgba(0,255,255,0.2);}50%{box-shadow:0 0 40px rgba(0,255,255,0.5);}100%{box-shadow:0 0 60px rgba(0,255,255,0.7);}}
-.brand{display:flex;align-items:center;gap:12px;margin-bottom:12px;}
-.brand .logo{font-weight:800;font-size:22px;color:var(--accent);text-shadow:0 0 8px var(--accent);}
-.brand .tag{color:var(--muted);font-size:12px;}
-label{display:block;margin-top:10px;color:var(--muted);font-size:13px;}
-input[type=text], input[type=password], input[type=number]{width:100%;padding:10px;border-radius:10px;border:1px solid rgba(255,255,255,0.1);background:transparent;color:inherit;margin-top:6px;box-shadow:0 0 8px rgba(0,255,255,0.3);}
-.btn{display:inline-block;padding:10px 14px;border-radius:12px;background:linear-gradient(90deg,var(--accent),var(--accent2));color:#000;font-weight:700;border:none;cursor:pointer;text-shadow:0 0 5px #fff;transition:0.2s;}
-.btn:hover{transform:scale(1.05);box-shadow:0 0 20px var(--accent);}
-.btn.alt{background:transparent;border:1px solid rgba(255,255,255,0.2);color:var(--accent);}
-.muted{color:var(--muted);font-size:13px;}
-table{width:100%;border-collapse:collapse;margin-top:10px;}
-th,td{padding:6px;text-align:left;font-size:13px;}
-thead th{color:var(--muted);font-weight:600;}
-.game{background:linear-gradient(135deg,rgba(0,255,255,0.03),rgba(0,255,255,0.01));border-radius:14px;padding:20px;border:1px solid rgba(255,255,255,0.05);box-shadow:0 0 40px rgba(0,255,255,0.3);}
-.toprow{display:flex;align-items:center;gap:12px;}
-.credits{font-size:20px;font-weight:800;color:var(--accent);text-shadow:0 0 8px var(--accent);}
-.stage{margin-left:auto;color:var(--muted);}
-.coin-wrap{display:flex;flex-direction:column;align-items:center;margin:20px 0;position:relative;}
-.coin{width:140px;height:140px;border-radius:50%;position:relative;transform-style:preserve-3d;cursor:pointer;box-shadow:0 0 30px var(--accent);}
-.coin-face{position:absolute;inset:0;border-radius:50%;display:flex;align-items:center;justify-content:center;font-weight:800;font-size:20px;backface-visibility:hidden;border:6px solid rgba(255,255,255,0.1);}
-.coin-front{background:radial-gradient(circle at 30% 25%, #bff1ff, #60c0ff);box-shadow:0 0 20px #0ff;}
-.coin-back{background:radial-gradient(circle at 70% 75%, #8fd1ff, #0ea5ff);transform:rotateY(180deg);box-shadow:0 0 20px #58f;}
-.coin.spin{animation:spin 1.2s cubic-bezier(.2,.8,.2,1);}
-@keyframes spin{from{transform:rotateY(0)}to{transform:rotateY(1440deg)}}
-.glow{width:220px;height:220px;border-radius:50%;filter:blur(40px);opacity:0.9;position:absolute;z-index:-1;}
-.glow.win{background:radial-gradient(circle,#8ef3ff, transparent 45%);}
-.glow.lose{background:radial-gradient(circle,#7fb8ff, transparent 45%);}
-.controls{display:flex;gap:10px;margin-top:12px;}
-.controls .wide{flex:1;}
-#log{margin-top:12px;padding:12px;background:linear-gradient(135deg,rgba(255,255,255,0.02),rgba(255,255,255,0.01));border-radius:10px;min-height:120px;overflow:auto;color:var(--muted);}
-.log-item{font-size:13px;margin-bottom:6px;}
-.modal-back{position:fixed;inset:0;background:rgba(0,0,0,0.7);display:none;align-items:center;justify-content:center;z-index:100;}
-.modal{background:var(--panel);padding:20px;border-radius:12px;border:1px solid rgba(255,255,255,0.05);min-width:320px;box-shadow:0 0 40px var(--accent);}
-.modal h2{margin-top:0;color:var(--accent);}
-.modal label{display:block;margin-top:10px;color:var(--muted);}
-.modal input{width:100%;padding:10px;border-radius:8px;border:1px solid rgba(255,255,255,0.1);background:transparent;color:#fff;margin-top:6px;}
-.modal button{margin-top:12px;background:var(--accent);border:none;color:#000;padding:10px 16px;border-radius:8px;cursor:pointer;font-weight:700;transition:0.2s;}
-.modal button:hover{transform:scale(1.05);box-shadow:0 0 20px var(--accent);}
-#preview{margin-top:12px;padding:10px;border:1px solid rgba(255,255,255,0.1);border-radius:8px;background:rgba(0,255,255,0.05);}
+
+html,body{
+  height:100%;
+  margin:0;
+  font-family:Inter,system-ui,-apple-system,'Segoe UI',Roboto,sans-serif;
+  background:radial-gradient(circle at top,#061427,#04233b 80%);
+  color:#e6f0ff;
+}
+
+.container{
+  max-width:1100px;
+  margin:28px auto;
+  padding:20px;
+  display:grid;
+  grid-template-columns:320px 1fr;
+  gap:20px;
+}
+
+.panel{
+  background:linear-gradient(145deg,#0b1f3a,#0d2945);
+  border-radius:16px;
+  padding:22px;
+  border:1px solid rgba(14,165,255,0.2);
+  box-shadow:0 8px 28px rgba(14,165,255,0.25),0 0 40px rgba(0,180,255,0.15) inset;
+  transition:0.3s;
+}
+.panel:hover{
+  box-shadow:0 12px 36px rgba(14,165,255,0.35),0 0 60px rgba(0,180,255,0.25) inset;
+}
+
+.brand .logo{
+  font-weight:900;
+  font-size:24px;
+  color:var(--accent);
+  text-shadow:0 0 8px var(--accent),0 0 20px var(--accent2);
+}
+
+label{
+  display:block;
+  margin-top:10px;
+  color:var(--muted);
+  font-size:13px;
+}
+
+input[type=text],input[type=password],input[type=number]{
+  width:100%;
+  padding:12px;
+  border-radius:12px;
+  border:1px solid rgba(255,255,255,0.1);
+  background:rgba(0,0,0,0.15);
+  color:#fff;
+  margin-top:6px;
+  box-shadow:0 0 10px rgba(14,165,255,0.2) inset;
+  transition:0.2s;
+}
+input[type=text]:focus,input[type=password]:focus,input[type=number]:focus{
+  border-color:var(--accent2);
+  box-shadow:0 0 15px var(--accent2);
+  outline:none;
+}
+
+.btn{
+  display:inline-block;
+  padding:12px 16px;
+  border-radius:12px;
+  background:linear-gradient(90deg,var(--accent),var(--accent2));
+  color:#002236;
+  font-weight:700;
+  border:none;
+  cursor:pointer;
+  text-shadow:0 0 6px #fff;
+  transition:0.2s;
+}
+.btn:hover{
+  transform:scale(1.05);
+  box-shadow:0 0 18px var(--accent),0 0 35px var(--accent2);
+}
+.btn.alt{
+  background:transparent;
+  border:1px solid rgba(255,255,255,0.15);
+  color:var(--accent);
+}
+
+.game{
+  background:linear-gradient(145deg,#0b1f3a,#0d2945);
+  border-radius:16px;
+  padding:22px;
+  border:1px solid rgba(14,165,255,0.1);
+  box-shadow:0 8px 28px rgba(14,165,255,0.2),0 0 40px rgba(0,180,255,0.1) inset;
+  transition:0.3s;
+}
+.game:hover{
+  box-shadow:0 12px 36px rgba(14,165,255,0.3),0 0 60px rgba(0,180,255,0.2) inset;
+}
+
+.toprow{
+  display:flex;
+  align-items:center;
+  gap:12px;
+}
+.credits{
+  font-size:18px;
+  font-weight:800;
+  color:var(--accent);
+  text-shadow:0 0 6px var(--accent);
+}
+.stage{
+  margin-left:auto;
+  color:var(--muted);
+}
+
+.coin-wrap{
+  display:flex;
+  flex-direction:column;
+  align-items:center;
+  margin:20px 0;
+  position:relative;
+}
+
+.coin{
+  width:150px;
+  height:150px;
+  border-radius:50%;
+  position:relative;
+  transform-style:preserve-3d;
+  cursor:pointer;
+  box-shadow:0 0 25px var(--accent),0 0 50px var(--accent2) inset;
+  transition:transform 1s ease-in-out;
+}
+.coin-face{
+  position:absolute;
+  inset:0;
+  border-radius:50%;
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  font-weight:900;
+  font-size:22px;
+  backface-visibility:hidden;
+  border:6px solid rgba(255,255,255,0.1);
+  text-shadow:0 0 4px #fff;
+}
+.coin-front{
+  background:radial-gradient(circle at 30% 25%, #bff1ff, #60c0ff);
+  box-shadow:0 0 20px #0ea5ff inset;
+}
+.coin-back{
+  background:radial-gradient(circle at 70% 75%, #8fd1ff, #0ea5ff);
+  transform:rotateY(180deg);
+  box-shadow:0 0 20px #00b4ff inset;
+}
+
+.coin.spin{
+  animation:spin 1.2s cubic-bezier(.2,.8,.2,1);
+}
+
+@keyframes spin{
+  from{transform:rotateY(0)}
+  to{transform:rotateY(1440deg)}
+}
+
+.glow{
+  width:260px;
+  height:260px;
+  border-radius:50%;
+  filter:blur(45px);
+  opacity:0.85;
+  position:absolute;
+  z-index:-1;
+  transition:0.3s;
+}
+.glow.win{background:radial-gradient(circle,#8ef3ff, transparent 50%);}
+.glow.lose{background:radial-gradient(circle,#ff6b6b, transparent 50%);}
+
+.controls{
+  display:flex;
+  gap:10px;
+  margin-top:12px;
+}
+.controls .wide{
+  flex:1;
+}
+
+#log{
+  margin-top:12px;
+  padding:14px;
+  background:rgba(0,0,0,0.2);
+  border-radius:12px;
+  min-height:120px;
+  overflow:auto;
+  box-shadow:0 0 15px rgba(14,165,255,0.15) inset;
+}
+.log-item{
+  font-size:13px;
+  color:var(--muted);
+}
+
+table{
+  width:100%;
+  border-collapse:collapse;
+  margin-top:10px;
+}
+th,td{
+  padding:6px;
+  text-align:left;
+  font-size:13px;
+}
+thead th{
+  color:var(--muted);
+  font-weight:600;
+}
+
+/* 팝업 */
+.modal-back{
+  position:fixed;
+  inset:0;
+  background:rgba(2,6,23,0.8);
+  display:none;
+  align-items:center;
+  justify-content:center;
+  z-index:100;
+}
+.modal{
+  background:linear-gradient(145deg,#0b1f3a,#0d2945);
+  border-radius:16px;
+  padding:22px;
+  border:1px solid rgba(14,165,255,0.1);
+  box-shadow:0 0 28px var(--accent),0 0 50px var(--accent2) inset;
+  min-width:320px;
+  transition:0.3s;
+}
 </style>
 </head>
 <body>
 <div class="container">
   <div class="panel">
-    <div class="brand"><div class="logo">강남랜드</div><div class="tag">토토 스타일 베팅</div></div>
-    <button id="btnShowLogin" class="btn wide" style="margin-bottom:10px">로그인 / 회원가입</button>
-    <div id="rankPreviewContainer">
-      <h3>랭킹 미리보기</h3>
-      <table id="rankPreview">
-        <thead><tr><th>순위</th><th>학번</th><th>크레딧</th></tr></thead>
-        <tbody></tbody>
-      </table>
+    <div class="brand"><div class="logo">강남랜드</div></div>
+    <div style="display:flex;gap:8px;margin-top:10px">
+      <button id="btnLogin" class="btn">로그인</button>
+      <button id="btnSignup" class="btn alt">회원가입</button>
     </div>
+    <div class="muted" style="margin-top:10px">기본 100크레딧으로 시작</div>
+    <hr style="margin:14px 0;border:none;height:1px;background:rgba(255,255,255,0.03)">
+    <h3>랭킹</h3>
+    <table id="rankPreview"><thead><tr><th>순위</th><th>학번</th><th>크레딧</th></tr></thead><tbody></tbody></table>
   </div>
   <div class="game">
-    <div class="toprow">
-      <div class="credits">크레딧: <span id="credits">0</span></div>
-      <div class="stage">현재 단계: <strong id="stageLabel">-</strong></div>
-    </div>
-    <div id="preview">단계별 확률 및 배율: 1)80%x1.1 2)70%x1.3 3)60%x1.5 4)50%x1.8 5)30%x2.5 6)20%x4 7)10%x8</div>
+    <div class="toprow"><div class="credits">크레딧: <span id="credits">0</span></div><div class="stage">단계: <strong id="stageLabel">-</strong></div></div>
     <div style="margin-top:12px;display:flex;gap:10px;align-items:center">
-      <label style="color:var(--muted);">배팅 금액</label>
-      <input id="bet" type="number" value="10" min="1" style="width:140px;">
+      <label>배팅 금액</label>
+      <input id="bet" type="number" value="10" min="1">
     </div>
-    <div class="coin-wrap">
+    <div style="position:relative;display:flex;flex-direction:column;align-items:center">
       <div id="glow" class="glow" style="display:none"></div>
-      <div id="coin" class="coin heads" aria-hidden="true">
-        <div class="coin-face coin-front">앞면</div>
-        <div class="coin-face coin-back">뒷면</div>
+      <div class="coin-wrap">
+        <div id="coin" class="coin heads">
+          <div class="coin-face coin-front">앞면</div>
+          <div class="coin-face coin-back">뒷면</div>
+        </div>
       </div>
     </div>
     <div class="controls">
@@ -98,96 +282,148 @@ thead th{color:var(--muted);font-weight:600;}
   </div>
 </div>
 
-<div class="modal-back" id="loginModal">
+<div class="modal-back" id="authModal">
   <div class="modal">
-    <h2>로그인 / 회원가입</h2>
-    <label>학번 (ID)</label><input type="text" id="inId" placeholder="예: 20824">
-    <label>비밀번호</label><input type="password" id="inPwd" placeholder="비밀번호">
-    <div style="display:flex;gap:10px;margin-top:10px">
-      <button id="btnLogin" class="btn wide">로그인</button>
-      <button id="btnSignup" class="btn wide alt">회원가입</button>
-    </div>
-    <button id="closeLogin" class="btn wide" style="margin-top:10px">닫기</button>
+    <h3 id="authTitle">로그인</h3>
+    <label>학번</label>
+    <input id="authId" type="text" placeholder="학번 입력">
+    <label>비밀번호</label>
+    <input id="authPwd" type="password" placeholder="비밀번호 입력">
+    <button id="authBtn" class="btn wide">확인</button>
+    <button id="switchAuth" class="btn alt wide" style="margin-top:6px">회원가입 전환</button>
   </div>
 </div>
 
 <script type="module">
-import { initializeApp } from 'https://www.gstatic.com/firebasejs/12.6.0/firebase-app.js';
-import { getFirestore, doc, setDoc, getDoc, updateDoc, collection, query, orderBy, getDocs, limit } from 'https://www.gstatic.com/firebasejs/12.6.0/firebase-firestore.js';
+import { initializeApp } from "https://www.gstatic.com/firebasejs/12.4.0/firebase-app.js";
+import { getDatabase, ref, push, onValue, set, get } from "https://www.gstatic.com/firebasejs/12.4.0/firebase-database.js";
 
-const firebaseConfig={apiKey:'AIzaSyDfTOFchRqnH1ifrwgJ-F--qdzRGecs0Q8',authDomain:'bacarat-5e575.firebaseapp.com',projectId:'bacarat-5e575'};
-const app=initializeApp(firebaseConfig),db=getFirestore(app);
+const FIREBASE_CONFIG = {
+  apiKey: "AIzaSyAaYIB1Ows4tOVIQotQCyFHFR2h3pBEeTg",
+  authDomain: "jungportfolio-b803e.firebaseapp.com",
+  databaseURL: "https://jungportfolio-b803e-default-rtdb.asia-southeast1.firebasedatabase.app",
+  projectId: "jungportfolio-b803e",
+  storageBucket: "jungportfolio-b803e.appspot.com",
+  messagingSenderId: "204994545121",
+  appId: "1:204994545121:web:d3e6879b5061781b433ea0"
+};
 
-const stages=[{name:'1단계',prob:0.8,mult:1.1},{name:'2단계',prob:0.7,mult:1.3},{name:'3단계',prob:0.6,mult:1.5},{name:'4단계',prob:0.5,mult:1.8},{name:'5단계',prob:0.3,mult:2.5},{name:'6단계',prob:0.2,mult:4},{name:'7단계',prob:0.1,mult:8}];
+const app = initializeApp(FIREBASE_CONFIG);
+const db = getDatabase(app);
+const usersRef = ref(db,'users');
 
-const inId=document.getElementById('inId'),
-      inPwd=document.getElementById('inPwd'),
-      btnLogin=document.getElementById('btnLogin'),
-      btnSignup=document.getElementById('btnSignup'),
-      btnShowLogin=document.getElementById('btnShowLogin'),
-      closeLogin=document.getElementById('closeLogin'),
-      rankPreviewTbody=document.querySelector('#rankPreview tbody'),
-      creditsEl=document.getElementById('credits'),
-      stageLabel=document.getElementById('stageLabel'),
-      betEl=document.getElementById('bet'),
-      startBtn=document.getElementById('startBtn'),
-      goBtn=document.getElementById('goBtn'),
-      stopBtn=document.getElementById('stopBtn'),
-      coinEl=document.getElementById('coin'),
-      glowEl=document.getElementById('glow'),
-      logEl=document.getElementById('log'),
-      loginModal=document.getElementById('loginModal');
+const stages=[
+  {name:'1단계',prob:0.8,mult:1.1},{name:'2단계',prob:0.7,mult:1.3},
+  {name:'3단계',prob:0.6,mult:1.5},{name:'4단계',prob:0.5,mult:1.8},
+  {name:'5단계',prob:0.3,mult:2.5},{name:'6단계',prob:0.2,mult:4},
+  {name:'7단계',prob:0.1,mult:8}
+];
 
-let currentUser=null,userCredits=0,currentStageIndex=-1,currentBet=0,started=false;
+// DOM
+const rankPreviewTbody=document.querySelector('#rankPreview tbody'),
+creditsEl=document.getElementById('credits'),
+stageLabel=document.getElementById('stageLabel'),
+betEl=document.getElementById('bet'),
+startBtn=document.getElementById('startBtn'),
+goBtn=document.getElementById('goBtn'),
+stopBtn=document.getElementById('stopBtn'),
+coinEl=document.getElementById('coin'),
+glowEl=document.getElementById('glow'),
+logEl=document.getElementById('log'),
+btnLogin=document.getElementById('btnLogin'),
+btnSignup=document.getElementById('btnSignup'),
+authModal=document.getElementById('authModal'),
+authTitle=document.getElementById('authTitle'),
+authId=document.getElementById('authId'),
+authPwd=document.getElementById('authPwd'),
+authBtn=document.getElementById('authBtn'),
+switchAuth=document.getElementById('switchAuth');
+
+let loginMode=true, currentUser=null, userCredits=0, currentStageIndex=-1, currentBet=0, started=false;
 
 function appendLog(t){let d=document.createElement('div');d.className='log-item';d.textContent=`${new Date().toLocaleTimeString()} — ${t}`;logEl.prepend(d);}
-btnShowLogin.addEventListener('click',()=>loginModal.style.display='flex');
-closeLogin.addEventListener('click',()=>loginModal.style.display='none');
 
-btnSignup.addEventListener('click',async()=>{
-  let id=inId.value.trim(),pwd=inPwd.value;
-  if(!/^[0-9]+$/.test(id)){return alert('학번은 숫자만 입력하세요.');}
-  if(!pwd||pwd.length<2)return alert('비밀번호 입력');
-  let ref=doc(db,'users',id),snap=await getDoc(ref);
-  if(snap.exists()){return alert('이미 존재하는 학번입니다.');}
-  await setDoc(ref,{id:id,password:pwd,credits:100,createdAt:new Date().toISOString()});
-  appendLog(`회원가입 완료: ${id} (크레딧 100)`);
-  alert(`가입 완료! 학번 ${id}로 로그인하세요.`);
+function openAuthModal(mode='login'){loginMode=mode==='login';authTitle.textContent=loginMode?'로그인':'회원가입';authBtn.textContent='확인';authId.value='';authPwd.value='';authModal.style.display='flex';}
+function closeAuthModal(){authModal.style.display='none';}
+authModal.addEventListener('click', e=>{if(e.target===authModal) closeAuthModal();});
+switchAuth.addEventListener('click', ()=>openAuthModal(loginMode?'signup':'login'));
+btnLogin.addEventListener('click', ()=>openAuthModal('login'));
+btnSignup.addEventListener('click', ()=>openAuthModal('signup'));
+
+authBtn.addEventListener('click', async()=>{
+  const id=authId.value.trim(), pwd=authPwd.value.trim();
+  if(!id||!pwd){alert('학번과 비밀번호 필요');return;}
+  const userRef = ref(db, `users/${id}`);
+  const snapshot = await get(userRef);
+  if(loginMode){
+    if(!snapshot.exists()){alert('회원 없음');return;}
+    const data=snapshot.val();
+    if(data.password!==pwd){alert('비밀번호 불일치');return;}
+    currentUser=id; userCredits=data.credits||0; creditsEl.textContent=userCredits;
+    appendLog(`${id} 로그인 성공`);
+  } else {
+    if(snapshot.exists()){alert('이미 존재하는 학번');return;}
+    await set(userRef,{password:pwd,credits:100});
+    alert('가입 완료! 로그인 해주세요.');
+    closeAuthModal();
+    return;
+  }
+  closeAuthModal();
   loadRankPreview();
 });
 
-btnLogin.addEventListener('click',async()=>{
-  let id=inId.value.trim(),pwd=inPwd.value;
-  if(!id) return alert('학번 입력');
-  let ref=doc(db,'users',id),snap=await getDoc(ref);
-  if(!snap.exists()) return alert('해당 학번 없음. 가입하세요.');
-  let data=snap.data();
-  if(data.password!==pwd) return alert('비밀번호 불일치');
-  currentUser=id;
-  userCredits=data.credits||0;
-  creditsEl.textContent=userCredits;
-  appendLog(`로그인: ${id}`);
-  loginModal.style.display='none';
+startBtn.addEventListener('click',()=>{
+  if(!currentUser){alert('먼저 로그인'); return;}
+  let bet=Number(betEl.value)||0; if(bet<=0||bet>userCredits){alert('배팅액 확인'); return;}
+  currentBet=bet; currentStageIndex=0; started=true;
+  startBtn.disabled=true; goBtn.disabled=true; stopBtn.disabled=true;
+  stageLabel.textContent=stages[currentStageIndex].name;
+  appendLog(`배팅 ${bet} 시작`);
+  attemptStage();
 });
 
-async function loadRankPreview(){
-  try{
-    let q=query(collection(db,'users'),orderBy('credits','desc'),limit(5));
-    let snap=await getDocs(q);
-    rankPreviewTbody.innerHTML='';
-    let i=1;
-    snap.forEach(d=>{
-      let r=d.data();
-      let tr=document.createElement('tr');
-      tr.innerHTML=`<td>#${i}</td><td>${r.id}</td><td>${r.credits||0}</td>`;
-      rankPreviewTbody.appendChild(tr);
-      i++;
-    });
-  }catch(e){console.error(e);}
+async function attemptStage(){
+  let prob=stages[currentStageIndex].prob;
+  appendLog(`${stages[currentStageIndex].name} 시도 (성공확률 ${Math.round(prob*100)}%)`);
+  let ok=Math.random()<prob;
+  coinEl.classList.remove('heads','tails'); coinEl.classList.add('spin');
+  glowEl.style.display='block'; glowEl.className='glow';
+  setTimeout(async()=>{
+    coinEl.classList.remove('spin'); coinEl.classList.add(ok?'heads':'tails');
+    glowEl.className=ok?'glow win':'glow lose';
+    if(ok){goBtn.disabled=false; stopBtn.disabled=false; appendLog('성공!');}
+    else{ appendLog('실패!'); userCredits-=currentBet; if(userCredits<0)userCredits=0; creditsEl.textContent=userCredits; await set(ref(db,`users/${currentUser}/credits`),userCredits); resetRun();}
+  },1200);
 }
-loadRankPreview();
 
-// 게임 시작, GO, STOP, 코인 애니메이션 등 기존 코드 그대로 적용
+goBtn.addEventListener('click',()=>{
+  if(!started||currentStageIndex>=stages.length-1)return;
+  currentStageIndex++; stageLabel.textContent=stages[currentStageIndex].name;
+  goBtn.disabled=true; stopBtn.disabled=true; appendLog(`다음 단계: ${stages[currentStageIndex].name}`);
+  attemptStage();
+});
+
+stopBtn.addEventListener('click', async()=>{
+  if(!started)return;
+  let payout=Math.floor(currentBet*stages[currentStageIndex].mult);
+  appendLog(`STOP 회수: ${payout}`);
+  userCredits+=payout; creditsEl.textContent=userCredits;
+  await set(ref(db,`users/${currentUser}/credits`),userCredits);
+  resetRun();
+});
+
+function resetRun(){currentStageIndex=-1;started=false;currentBet=0;startBtn.disabled=false;goBtn.disabled=true;stopBtn.disabled=true;stageLabel.textContent='-';glowEl.style.display='none';}
+
+async function loadRankPreview(){
+  onValue(usersRef, snapshot=>{
+    const data=snapshot.val()||{};
+    const arr=Object.entries(data).map(([id,val])=>({id,credits:val.credits||0})).sort((a,b)=>b.credits-a.credits).slice(0,5);
+    rankPreviewTbody.innerHTML='';
+    arr.forEach((u,i)=>{let tr=document.createElement('tr');tr.innerHTML=`<td>${i+1}</td><td>${u.id}</td><td>${u.credits}</td>`;rankPreviewTbody.appendChild(tr);});
+  });
+}
+
+loadRankPreview();
 </script>
 </body>
 </html>
