@@ -1,226 +1,133 @@
-<!doctype html>
+<!DOCTYPE html>
 <html lang="ko">
 <head>
-<meta charset="utf-8">
-<meta name="viewport" content="width=device-width,initial-scale=1">
-<title>강남랜드 — 단계형 코인 게임</title>
-<style>
-:root{--bg:#071e3a;--panel:#0b2740;--accent:#0ea5ff;--accent2:#00b4ff;--muted:#9fb6d9}
-html,body{height:100%;margin:0;font-family:Inter,system-ui,-apple-system,'Segoe UI',Roboto,sans-serif;background:linear-gradient(180deg,#061427 0%,#04233b 100%);color:#e6f0ff}
-.container{max-width:1100px;margin:28px auto;padding:20px;display:grid;grid-template-columns:320px 1fr;gap:20px}
-.panel{background:var(--panel);border-radius:12px;padding:18px;border:1px solid rgba(255,255,255,0.04);box-shadow:0 8px 28px rgba(2,6,23,0.6)}
-.brand{display:flex;align-items:center;gap:12px}.brand .logo{font-weight:800;font-size:20px;color:var(--accent)}
-label{display:block;margin-top:10px;color:var(--muted);font-size:13px}
-input[type=text],input[type=password],input[type=number]{width:100%;padding:10px;border-radius:10px;border:1px solid rgba(255,255,255,0.04);background:transparent;color:inherit;margin-top:6px}
-.btn{display:inline-block;padding:10px 12px;border-radius:10px;background:linear-gradient(90deg,var(--accent),var(--accent2));color:#002236;font-weight:700;border:none;cursor:pointer}
-.btn.alt{background:transparent;border:1px solid rgba(255,255,255,0.06);color:var(--accent)}
-.muted{color:var(--muted);font-size:13px}
-table{width:100%;border-collapse:collapse;margin-top:10px}th,td{padding:6px;text-align:left;font-size:13px}thead th{color:var(--muted);font-weight:600}
-.game{background:var(--panel);border-radius:12px;padding:20px;border:1px solid rgba(255,255,255,0.03);box-shadow:0 8px 28px rgba(2,6,23,0.6)}
-.toprow{display:flex;align-items:center;gap:12px}.credits{font-size:18px;font-weight:800;color:var(--accent)}.stage{margin-left:auto;color:var(--muted)}
-.coin-wrap{display:flex;flex-direction:column;align-items:center;margin:18px 0}.coin{width:140px;height:140px;border-radius:50%;position:relative;transform-style:preserve-3d;cursor:pointer}
-.coin-face{position:absolute;inset:0;border-radius:50%;display:flex;align-items:center;justify-content:center;font-weight:800;font-size:20px;backface-visibility:hidden;border:6px solid rgba(255,255,255,0.04)}
-.coin-front{background:radial-gradient(circle at 30% 25%, #bff1ff, #60c0ff);box-shadow:0 10px 30px rgba(6,139,206,0.12)}
-.coin-back{background:radial-gradient(circle at 70% 75%, #8fd1ff, #0ea5ff);transform:rotateY(180deg);box-shadow:0 10px 30px rgba(6,139,206,0.08)}
-.coin.spin{animation:spin 1.2s cubic-bezier(.2,.8,.2,1)}
-.coin.heads{transform:rotateY(0deg)}.coin.tails{transform:rotateY(180deg)}
-@keyframes spin{from{transform:rotateY(0)}to{transform:rotateY(1440deg)}}
-.glow{width:220px;height:220px;border-radius:50%;filter:blur(30px);opacity:0.9;position:absolute;z-index:-1}
-.glow.win{background:radial-gradient(circle,#8ef3ff, transparent 45%)}
-.glow.lose{background:radial-gradient(circle,#7fb8ff, transparent 45%)}
-.controls{display:flex;gap:10px;margin-top:12px}.controls .wide{flex:1}
-#log{margin-top:12px;padding:12px;background:rgba(255,255,255,0.03);border-radius:10px;min-height:120px;overflow:auto}.log-item{font-size:13px;color:var(--muted);margin-bottom:6px}
-/* 팝업 */
-.modal-back{position:fixed;inset:0;background:rgba(2,6,23,0.6);display:none;align-items:center;justify-content:center;z-index:100}
-.modal{background:var(--panel);padding:18px;border-radius:12px;border:1px solid rgba(255,255,255,0.03);min-width:320px}
-</style>
+    <meta charset="UTF-8">
+    <title>Quantum Shield vs Mythos AI 시뮬레이터</title>
+    <style>
+        :root { --bg: #0f172a; --text: #f8fafc; --accent: #deff9a; --danger: #f43f5e; }
+        body { font-family: sans-serif; background: var(--bg); color: var(--text); padding: 40px; line-height: 1.6; }
+        .container { max-width: 900px; margin: 0 auto; }
+        .card { background: #1e293b; border-radius: 12px; padding: 20px; margin-bottom: 20px; border: 1px solid #334155; }
+        h1, h2 { color: var(--accent); }
+        .grid { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 15px; }
+        .box { padding: 15px; border-radius: 8px; background: #0f172a; border-left: 4px solid var(--accent); }
+        .controls { margin: 20px 0; display: flex; gap: 20px; align-items: center; }
+        button { background: var(--accent); color: #000; border: none; padding: 10px 25px; border-radius: 6px; cursor: pointer; font-weight: bold; }
+        button:hover { opacity: 0.8; }
+        .log-area { height: 250px; overflow-y: auto; background: #000; color: #10b981; padding: 15px; font-family: monospace; border-radius: 8px; font-size: 13px; }
+        .stat { font-size: 24px; font-weight: bold; color: var(--accent); }
+        .error { color: var(--danger); }
+    </style>
 </head>
 <body>
+
 <div class="container">
-  <div class="panel">
-    <div class="brand"><div class="logo">강남랜드</div></div>
-    <div style="display:flex;gap:8px;margin-top:10px">
-      <button id="btnLogin" class="btn">로그인</button>
-      <button id="btnSignup" class="btn alt">회원가입</button>
-    </div>
-    <div class="muted" style="margin-top:10px">기본 100크레딧으로 시작</div>
-    <hr style="margin:14px 0;border:none;height:1px;background:rgba(255,255,255,0.03)">
-    <h3>랭킹</h3>
-    <table id="rankPreview"><thead><tr><th>순위</th><th>학번</th><th>크레딧</th></tr></thead><tbody></tbody></table>
-  </div>
-  <div class="game">
-    <div class="toprow"><div class="credits">크레딧: <span id="credits">0</span></div><div class="stage">단계: <strong id="stageLabel">-</strong></div></div>
-    <div style="margin-top:12px;display:flex;gap:10px;align-items:center">
-      <label>배팅 금액</label>
-      <input id="bet" type="number" value="10" min="1">
-    </div>
-    <div style="position:relative;display:flex;flex-direction:column;align-items:center">
-      <div id="glow" class="glow" style="display:none"></div>
-      <div class="coin-wrap">
-        <div id="coin" class="coin heads">
-          <div class="coin-face coin-front">앞면</div>
-          <div class="coin-face coin-back">뒷면</div>
+    <h1>🛡️ Quantum Shield vs Mythos AI</h1>
+    <p>물리학 II 양자 역학 원리를 이용한 보안성 검증 시뮬레이터</p>
+
+    <div class="card">
+        <div class="controls">
+            <label><input type="checkbox" id="eveToggle"> <b>미토스 AI(Eve) 개입</b></label>
+            <button onclick="runSimulation()">시뮬레이션 시작 (100개 광자 발송)</button>
         </div>
-      </div>
     </div>
-    <div class="controls">
-      <button id="startBtn" class="btn wide">게임 시작</button>
-      <button id="goBtn" class="btn wide" disabled>GO</button>
-      <button id="stopBtn" class="btn wide" disabled>STOP</button>
+
+    <div class="grid">
+        <div class="box">
+            <h3>Alice (송신)</h3>
+            <p>비밀 키 생성 및<br>양자 상태 발송</p>
+        </div>
+        <div class="box" style="border-color: #f43f5e;">
+            <h3>Eve (미토스 AI)</h3>
+            <p id="eveStatus">대기 중...</p>
+        </div>
+        <div class="box">
+            <h3>Bob (수신)</h3>
+            <p>양자 상태 측정 및<br>필터 대조</p>
+        </div>
     </div>
-    <div id="log"></div>
-  </div>
+
+    <div class="card" style="margin-top: 20px;">
+        <h2>📝 실시간 로그 및 결과 분석</h2>
+        <div id="log" class="log-area">상단 버튼을 눌러 시뮬레이션을 시작하세요...</div>
+        <div class="grid" style="margin-top: 20px;">
+            <div>필터 일치 비트 수: <span id="keyLen" class="stat">0</span></div>
+            <div>에러율(BER): <span id="errorRate" class="stat">0</span>%</div>
+            <div id="securityStatus" style="font-weight: bold;"></div>
+        </div>
+    </div>
 </div>
 
-<!-- 로그인/회원가입 팝업 -->
-<div class="modal-back" id="authModal">
-  <div class="modal">
-    <h3 id="authTitle">로그인</h3>
-    <label>학번</label>
-    <input id="authId" type="text" placeholder="학번 입력">
-    <label>비밀번호</label>
-    <input id="authPwd" type="password" placeholder="비밀번호 입력">
-    <button id="authBtn" class="btn wide">확인</button>
-    <button id="switchAuth" class="btn alt wide" style="margin-top:6px">회원가입 전환</button>
-  </div>
-</div>
+<script>
+    function runSimulation() {
+        const isEvePresent = document.getElementById('eveToggle').checked;
+        const log = document.getElementById('log');
+        const eveStatus = document.getElementById('eveStatus');
+        log.innerHTML = "시뮬레이션 가동 중...\n";
+        
+        let rawBits = 100;
+        let finalKeyAlice = "";
+        let finalKeyBob = "";
+        let errorCount = 0;
+        let matchedFilters = 0;
 
-<script type="module">
-import { initializeApp } from "https://www.gstatic.com/firebasejs/12.4.0/firebase-app.js";
-import { getDatabase, ref, push, onValue, set, get } from "https://www.gstatic.com/firebasejs/12.4.0/firebase-database.js";
+        for (let i = 0; i < rawBits; i++) {
+            // 1. Alice가 비트와 필터를 무작위 생성
+            let aBit = Math.floor(Math.random() * 2);
+            let aFilter = Math.random() < 0.5 ? '+' : 'x';
 
-const FIREBASE_CONFIG = {
-  apiKey: "AIzaSyAaYIB1Ows4tOVIQotQCyFHFR2h3pBEeTg",
-  authDomain: "jungportfolio-b803e.firebaseapp.com",
-  databaseURL: "https://jungportfolio-b803e-default-rtdb.asia-southeast1.firebasedatabase.app",
-  projectId: "jungportfolio-b803e",
-  storageBucket: "jungportfolio-b803e.appspot.com",
-  messagingSenderId: "204994545121",
-  appId: "1:204994545121:web:d3e6879b5061781b433ea0"
-};
+            // 2. Eve (Mythos AI)의 관측
+            let currentBit = aBit;
+            if (isEvePresent) {
+                eveStatus.innerText = "⚠️ 관측 중 (상태 붕괴 발생)";
+                let eFilter = Math.random() < 0.5 ? '+' : 'x';
+                if (eFilter !== aFilter) {
+                    currentBit = Math.floor(Math.random() * 2); // 관측으로 인한 상태 붕괴
+                }
+            } else {
+                eveStatus.innerText = "💤 수동적 대기 중";
+            }
 
-const app = initializeApp(FIREBASE_CONFIG);
-const db = getDatabase(app);
-const usersRef = ref(db,'users');
+            // 3. Bob의 측정
+            let bFilter = Math.random() < 0.5 ? '+' : 'x';
+            let bBit = currentBit;
+            if (bFilter !== aFilter) {
+                bBit = Math.floor(Math.random() * 2); // 필터가 다르면 50% 확률
+            }
 
-const stages=[
-  {name:'1단계',prob:0.8,mult:1.1},{name:'2단계',prob:0.7,mult:1.3},
-  {name:'3단계',prob:0.6,mult:1.5},{name:'4단계',prob:0.5,mult:1.8},
-  {name:'5단계',prob:0.3,mult:2.5},{name:'6단계',prob:0.2,mult:4},
-  {name:'7단계',prob:0.1,mult:8}
-];
+            // 4. 필터 대조 (키 생성)
+            if (aFilter === bFilter) {
+                matchedFilters++;
+                finalKeyAlice += aBit;
+                finalKeyBob += bBit;
+                if (aBit !== bBit) errorCount++;
+            }
+        }
 
-// DOM
-const rankPreviewTbody=document.querySelector('#rankPreview tbody'),
-creditsEl=document.getElementById('credits'),
-stageLabel=document.getElementById('stageLabel'),
-betEl=document.getElementById('bet'),
-startBtn=document.getElementById('startBtn'),
-goBtn=document.getElementById('goBtn'),
-stopBtn=document.getElementById('stopBtn'),
-coinEl=document.getElementById('coin'),
-glowEl=document.getElementById('glow'),
-logEl=document.getElementById('log'),
-btnLogin=document.getElementById('btnLogin'),
-btnSignup=document.getElementById('btnSignup'),
-authModal=document.getElementById('authModal'),
-authTitle=document.getElementById('authTitle'),
-authId=document.getElementById('authId'),
-authPwd=document.getElementById('authPwd'),
-authBtn=document.getElementById('authBtn'),
-switchAuth=document.getElementById('switchAuth');
+        const errorRate = ((errorCount / matchedFilters) * 100).toFixed(1);
+        
+        // 로그 출력
+        log.innerHTML += `전송된 총 광자: ${rawBits}개\n`;
+        log.innerHTML += `필터 일치(키 후보): ${matchedFilters}개\n`;
+        log.innerHTML += `추출된 키(Alice): ${finalKeyAlice.substring(0, 30)}...\n`;
+        log.innerHTML += `추출된 키(Bob):   ${finalKeyBob.substring(0, 30)}...\n`;
+        log.innerHTML += `감지된 에러 수: ${errorCount}개\n`;
 
-let loginMode=true, currentUser=null, userCredits=0, currentStageIndex=-1, currentBet=0, started=false;
-
-// 로그
-function appendLog(t){let d=document.createElement('div');d.className='log-item';d.textContent=`${new Date().toLocaleTimeString()} — ${t}`;logEl.prepend(d);}
-
-// 팝업
-function openAuthModal(mode='login'){loginMode=mode==='login';authTitle.textContent=loginMode?'로그인':'회원가입';authBtn.textContent='확인';authId.value='';authPwd.value='';authModal.style.display='flex';}
-function closeAuthModal(){authModal.style.display='none';}
-authModal.addEventListener('click', e=>{if(e.target===authModal) closeAuthModal();});
-switchAuth.addEventListener('click', ()=>openAuthModal(loginMode?'signup':'login'));
-btnLogin.addEventListener('click', ()=>openAuthModal('login'));
-btnSignup.addEventListener('click', ()=>openAuthModal('signup'));
-
-// 로그인/회원가입 처리
-authBtn.addEventListener('click', async()=>{
-  const id=authId.value.trim(), pwd=authPwd.value.trim();
-  if(!id||!pwd){alert('학번과 비밀번호 필요');return;}
-  const userRef = ref(db, `users/${id}`);
-  const snapshot = await get(userRef);
-  if(loginMode){
-    if(!snapshot.exists()){alert('회원 없음');return;}
-    const data=snapshot.val();
-    if(data.password!==pwd){alert('비밀번호 불일치');return;}
-    currentUser=id; userCredits=data.credits||0; creditsEl.textContent=userCredits;
-    appendLog(`${id} 로그인 성공`);
-  } else {
-    if(snapshot.exists()){alert('이미 존재하는 학번');return;}
-    await set(userRef,{password:pwd,credits:100});
-    alert('가입 완료! 로그인 해주세요.');
-    closeAuthModal();
-    return;
-  }
-  closeAuthModal();
-  loadRankPreview();
-});
-
-// 게임
-startBtn.addEventListener('click',()=>{
-  if(!currentUser){alert('먼저 로그인'); return;}
-  let bet=Number(betEl.value)||0; if(bet<=0||bet>userCredits){alert('배팅액 확인'); return;}
-  currentBet=bet; currentStageIndex=0; started=true;
-  startBtn.disabled=true; goBtn.disabled=true; stopBtn.disabled=true;
-  stageLabel.textContent=stages[currentStageIndex].name;
-  appendLog(`배팅 ${bet} 시작`);
-  attemptStage();
-});
-
-async function attemptStage(){
-  let prob=stages[currentStageIndex].prob;
-  appendLog(`${stages[currentStageIndex].name} 시도 (성공확률 ${Math.round(prob*100)}%)`);
-  let ok=Math.random()<prob;
-  coinEl.classList.remove('heads','tails'); coinEl.classList.add('spin');
-  glowEl.style.display='block'; glowEl.className='glow';
-  setTimeout(async()=>{
-    coinEl.classList.remove('spin'); coinEl.classList.add(ok?'heads':'tails');
-    glowEl.className=ok?'glow win':'glow lose';
-    if(ok){goBtn.disabled=false; stopBtn.disabled=false; appendLog('성공!');}
-    else{ appendLog('실패!'); userCredits-=currentBet; if(userCredits<0)userCredits=0; creditsEl.textContent=userCredits; await set(ref(db,`users/${currentUser}/credits`),userCredits); resetRun();}
-  },1200);
-}
-
-goBtn.addEventListener('click',()=>{
-  if(!started||currentStageIndex>=stages.length-1)return;
-  currentStageIndex++; stageLabel.textContent=stages[currentStageIndex].name;
-  goBtn.disabled=true; stopBtn.disabled=true; appendLog(`다음 단계: ${stages[currentStageIndex].name}`);
-  attemptStage();
-});
-
-stopBtn.addEventListener('click', async()=>{
-  if(!started)return;
-  let payout=Math.floor(currentBet*stages[currentStageIndex].mult);
-  appendLog(`STOP 회수: ${payout}`);
-  userCredits+=payout; creditsEl.textContent=userCredits;
-  await set(ref(db,`users/${currentUser}/credits`),userCredits);
-  resetRun();
-});
-
-function resetRun(){currentStageIndex=-1;started=false;currentBet=0;startBtn.disabled=false;goBtn.disabled=true;stopBtn.disabled=true;stageLabel.textContent='-';glowEl.style.display='none';}
-
-// 랭킹
-async function loadRankPreview(){
-  onValue(usersRef, snapshot=>{
-    const data=snapshot.val()||{};
-    const arr=Object.entries(data).map(([id,val])=>({id,credits:val.credits||0})).sort((a,b)=>b.credits-a.credits).slice(0,5);
-    rankPreviewTbody.innerHTML='';
-    arr.forEach((u,i)=>{
-      const tr=document.createElement('tr'); tr.innerHTML=`<td>#${i+1}</td><td>${u.id}</td><td>${u.credits}</td>`; rankPreviewTbody.appendChild(tr);
-    });
-  });
-}
-loadRankPreview();
+        // 결과 업데이트
+        document.getElementById('keyLen').innerText = matchedFilters;
+        document.getElementById('errorRate').innerText = errorRate;
+        const status = document.getElementById('securityStatus');
+        
+        if (isEvePresent && errorRate > 15) {
+            status.innerHTML = "<span class='error'>🚫 해킹 감지! 미토스 AI 침입 확인</span>";
+            status.style.color = "#f43f5e";
+        } else if (!isEvePresent && errorRate < 5) {
+            status.innerHTML = "<span style='color: #deff9a;'>✅ 보안 안전 (양자 키 일치)</span>";
+        } else {
+            status.innerHTML = "통계적 오차 범위 내";
+        }
+    }
 </script>
+
 </body>
 </html>
