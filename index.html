@@ -2,132 +2,145 @@
 <html lang="ko">
 <head>
     <meta charset="UTF-8">
-    <title>Quantum Shield vs Mythos AI 시뮬레이터</title>
+    <title>양자 키 분배 시뮬</title>
     <style>
-        :root { --bg: #0f172a; --text: #f8fafc; --accent: #deff9a; --danger: #f43f5e; }
-        body { font-family: sans-serif; background: var(--bg); color: var(--text); padding: 40px; line-height: 1.6; }
-        .container { max-width: 900px; margin: 0 auto; }
-        .card { background: #1e293b; border-radius: 12px; padding: 20px; margin-bottom: 20px; border: 1px solid #334155; }
-        h1, h2 { color: var(--accent); }
-        .grid { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 15px; }
-        .box { padding: 15px; border-radius: 8px; background: #0f172a; border-left: 4px solid var(--accent); }
-        .controls { margin: 20px 0; display: flex; gap: 20px; align-items: center; }
-        button { background: var(--accent); color: #000; border: none; padding: 10px 25px; border-radius: 6px; cursor: pointer; font-weight: bold; }
-        button:hover { opacity: 0.8; }
-        .log-area { height: 250px; overflow-y: auto; background: #000; color: #10b981; padding: 15px; font-family: monospace; border-radius: 8px; font-size: 13px; }
-        .stat { font-size: 24px; font-weight: bold; color: var(--accent); }
-        .error { color: var(--danger); }
+        body { font-family: 'Pretendard', sans-serif; background: #f0f2f5; display: flex; flex-direction: column; align-items: center; padding: 20px; }
+        .container { display: flex; gap: 20px; max-width: 1200px; }
+        .panel { background: white; border-radius: 12px; padding: 20px; width: 350px; box-shadow: 0 4px 6px rgba(0,0,0,0.1); }
+        h2 { border-bottom: 2px solid #333; padding-bottom: 10px; color: #1a73e8; }
+        .status { margin-top: 10px; font-size: 0.9em; color: #666; }
+        button { width: 100%; padding: 10px; margin: 10px 0; cursor: pointer; border-radius: 6px; border: none; background: #1a73e8; color: white; font-weight: bold; }
+        button:disabled { background: #ccc; }
+        .box { border: 2px dashed #999; padding: 15px; text-align: center; margin: 10px 0; font-weight: bold; min-height: 20px; }
+        .eavesdrop-box { background: #fff3f3; border-color: #ff4d4d; }
+        .result-log { height: 150px; overflow-y: auto; background: #333; color: #0f0; padding: 10px; font-family: monospace; font-size: 0.85em; border-radius: 4px; }
+        input { width: calc(100% - 22px); padding: 10px; margin-bottom: 10px; border: 1px solid #ddd; border-radius: 4px; }
     </style>
 </head>
 <body>
 
+<h1>미토스 쇼크 대응: 양자 키 분배 시뮬레이션</h1>
+
 <div class="container">
-    <h1>🛡️ Quantum Shield vs Mythos AI</h1>
-    <p>물리학 II 양자 역학 원리를 이용한 보안성 검증 시뮬레이터</p>
-
-    <div class="card">
-        <div class="controls">
-            <label><input type="checkbox" id="eveToggle"> <b>미토스 AI(Eve) 개입</b></label>
-            <button onclick="runSimulation()">시뮬레이션 시작 (100개 광자 발송)</button>
-        </div>
+    <div class="panel" id="alice">
+        <h2>송신자 (Alice)</h2>
+        <p>전송 횟수: <span id="send-count">0</span> / 6</p>
+        <div class="box" id="alice-photon">광자 준비 중...</div>
+        <button onclick="prepareAndSend()">도청 사이트로 전송</button>
+        <div class="result-log" id="alice-log"></div>
     </div>
 
-    <div class="grid">
-        <div class="box">
-            <h3>Alice (송신)</h3>
-            <p>비밀 키 생성 및<br>양자 상태 발송</p>
-        </div>
-        <div class="box" style="border-color: #f43f5e;">
-            <h3>Eve (미토스 AI)</h3>
-            <p id="eveStatus">대기 중...</p>
-        </div>
-        <div class="box">
-            <h3>Bob (수신)</h3>
-            <p>양자 상태 측정 및<br>필터 대조</p>
-        </div>
+    <div class="panel" id="eve">
+        <h2>광섬유 (Eve 침투망)</h2>
+        <label><input type="checkbox" id="eavesdrop-check"> <strong>도청하기 (관측 시도)</strong></label>
+        <div class="box eavesdrop-box" id="fiber-photon">광자 대기 중...</div>
+        <button id="forward-btn" onclick="forwardToBob()" disabled>수신자에게 전송</button>
+        <div class="status">※ 도청 시 얽힘 상태가 붕괴</div>
     </div>
 
-    <div class="card" style="margin-top: 20px;">
-        <h2>📝 실시간 로그 및 결과 분석</h2>
-        <div id="log" class="log-area">상단 버튼을 눌러 시뮬레이션을 시작하세요...</div>
-        <div class="grid" style="margin-top: 20px;">
-            <div>필터 일치 비트 수: <span id="keyLen" class="stat">0</span></div>
-            <div>에러율(BER): <span id="errorRate" class="stat">0</span>%</div>
-            <div id="securityStatus" style="font-weight: bold;"></div>
-        </div>
+    <div class="panel" id="bob">
+        <h2>수신자 (Bob)</h2>
+        <input type="text" id="plain-text" placeholder="암호화할 값 입력 (예: 기밀문서)">
+        <div class="box" id="bob-photon">데이터 대기 중...</div>
+        <div class="result-log" id="bob-log"></div>
+        <div id="final-key" style="margin-top:10px; font-weight:bold; color:red;"></div>
     </div>
 </div>
 
 <script>
-    function runSimulation() {
-        const isEvePresent = document.getElementById('eveToggle').checked;
-        const log = document.getElementById('log');
-        const eveStatus = document.getElementById('eveStatus');
-        log.innerHTML = "시뮬레이션 가동 중...\n";
+    let sendCount = 0;
+    let aliceData = [];
+    let bobData = [];
+    let currentPhoton = null;
+    let isEavesdropped = false;
+
+    // 1. 송신자 로직
+    function prepareAndSend() {
+        if (sendCount >= 6) return alert("6회 전송 완료!");
         
-        let rawBits = 100;
-        let finalKeyAlice = "";
-        let finalKeyBob = "";
-        let errorCount = 0;
-        let matchedFilters = 0;
+        const bit = Math.floor(Math.random() * 2); // 0 또는 1
+        const basis = Math.random() < 0.5 ? '+' : 'x'; // 필터 무작위 결정
+        
+        currentPhoton = { bit, basis, state: "stable" };
+        
+        document.getElementById('alice-photon').innerText = `전송 중: ${bit} (${basis})`;
+        document.getElementById('fiber-photon').innerText = `광자 통과 중 (얽힘 상태)`;
+        document.getElementById('forward-btn').disabled = false;
+        
+        sendCount++;
+        document.getElementById('send-count').innerText = sendCount;
+        log('alice-log', `${sendCount}회: ${bit}(${basis}) 전송`);
+    }
 
-        for (let i = 0; i < rawBits; i++) {
-            // 1. Alice가 비트와 필터를 무작위 생성
-            let aBit = Math.floor(Math.random() * 2);
-            let aFilter = Math.random() < 0.5 ? '+' : 'x';
-
-            // 2. Eve (Mythos AI)의 관측
-            let currentBit = aBit;
-            if (isEvePresent) {
-                eveStatus.innerText = "⚠️ 관측 중 (상태 붕괴 발생)";
-                let eFilter = Math.random() < 0.5 ? '+' : 'x';
-                if (eFilter !== aFilter) {
-                    currentBit = Math.floor(Math.random() * 2); // 관측으로 인한 상태 붕괴
-                }
-            } else {
-                eveStatus.innerText = "💤 수동적 대기 중";
+    // 2. 도청자 로직
+    function forwardToBob() {
+        const check = document.getElementById('eavesdrop-check').checked;
+        
+        if (check) {
+            // 관측 발생 -> 붕괴!
+            currentPhoton.state = "collapsed";
+            // 도청자가 측정을 시도하면 50% 확률로 값이 왜곡됨 (물리적 교란)
+            if (Math.random() < 0.5) {
+                currentPhoton.bit = currentPhoton.bit === 0 ? 1 : 0;
             }
-
-            // 3. Bob의 측정
-            let bFilter = Math.random() < 0.5 ? '+' : 'x';
-            let bBit = currentBit;
-            if (bFilter !== aFilter) {
-                bBit = Math.floor(Math.random() * 2); // 필터가 다르면 50% 확률
-            }
-
-            // 4. 필터 대조 (키 생성)
-            if (aFilter === bFilter) {
-                matchedFilters++;
-                finalKeyAlice += aBit;
-                finalKeyBob += bBit;
-                if (aBit !== bBit) errorCount++;
-            }
+            document.getElementById('fiber-photon').innerText = `붕괴됨! 관측값: ${currentPhoton.bit}`;
+            isEavesdropped = true;
+        } else {
+            document.getElementById('fiber-photon').innerText = `무결함 통과`;
+            isEavesdropped = false;
         }
 
-        const errorRate = ((errorCount / matchedFilters) * 100).toFixed(1);
-        
-        // 로그 출력
-        log.innerHTML += `전송된 총 광자: ${rawBits}개\n`;
-        log.innerHTML += `필터 일치(키 후보): ${matchedFilters}개\n`;
-        log.innerHTML += `추출된 키(Alice): ${finalKeyAlice.substring(0, 30)}...\n`;
-        log.innerHTML += `추출된 키(Bob):   ${finalKeyBob.substring(0, 30)}...\n`;
-        log.innerHTML += `감지된 에러 수: ${errorCount}개\n`;
+        receiveByBob();
+        document.getElementById('forward-btn').disabled = true;
+    }
 
-        // 결과 업데이트
-        document.getElementById('keyLen').innerText = matchedFilters;
-        document.getElementById('errorRate').innerText = errorRate;
-        const status = document.getElementById('securityStatus');
+    // 3. 수신자 로직
+    function receiveByBob() {
+        const bobBasis = Math.random() < 0.5 ? '+' : 'x';
+        let receivedBit = currentPhoton.bit;
+
+        // 필터가 다르면 50% 확률로 0 또는 1이 무작위로 나옴
+        if (bobBasis !== currentPhoton.basis) {
+            receivedBit = Math.random() < 0.5 ? 0 : 1;
+        }
+
+        const isMatch = (bobBasis === currentPhoton.basis);
         
-        if (isEvePresent && errorRate > 15) {
-            status.innerHTML = "<span class='error'>🚫 해킹 감지! 미토스 AI 침입 확인</span>";
-            status.style.color = "#f43f5e";
-        } else if (!isEvePresent && errorRate < 5) {
-            status.innerHTML = "<span style='color: #deff9a;'>✅ 보안 안전 (양자 키 일치)</span>";
-        } else {
-            status.innerHTML = "통계적 오차 범위 내";
+        bobData.push({ bit: receivedBit, basis: bobBasis, match: isMatch, error: (isMatch && isEavesdropped && Math.random() < 0.5) });
+
+        document.getElementById('bob-photon').innerText = `수신: ${receivedBit} (${bobBasis})`;
+        log('bob-log', `${sendCount}회: ${receivedBit}(${bobBasis}) 수신 [${isMatch ? '필터일치' : '불일치'}]`);
+
+        if (sendCount === 6) finalize();
+    }
+
+    function finalize() {
+        // 필터가 일치하는 것들만 모아서 키 생성
+        let finalKey = "";
+        let errorDetected = false;
+
+        bobData.forEach((data, index) => {
+            if (data.match) {
+                finalKey += data.bit;
+                // 도청으로 인한 에러 검사 (물리적 흔적)
+                if (isEavesdropped) errorDetected = true;
+            }
+        });
+
+        const plainText = document.getElementById('plain-text').value || "No Data";
+        const statusText = errorDetected ? "⚠️ 도청 감지! 키 폐기됨." : `✅ 생성된 키: ${finalKey}`;
+        document.getElementById('final-key').innerText = statusText;
+        
+        if (!errorDetected) {
+            log('bob-log', `최종 암호문: ${btoa(plainText + finalKey).substring(0,10)}...`);
         }
     }
-</script>
 
+    function log(id, msg) {
+        const el = document.getElementById(id);
+        el.innerHTML += msg + "<br>";
+        el.scrollTop = el.scrollHeight;
+    }
+</script>
 </body>
 </html>
