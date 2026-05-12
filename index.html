@@ -2,7 +2,7 @@
 <html lang="ko">
 <head>
     <meta charset="UTF-8">
-    <title> 양자 키 분배 시뮬레이터</title>
+    <title>QKD 미토스 쇼크 시뮬레이터</title>
     <style>
         body { font-family: 'Pretendard', sans-serif; background: #f0f2f5; display: flex; flex-direction: column; align-items: center; padding: 20px; }
         .container { display: flex; gap: 20px; max-width: 1200px; }
@@ -17,11 +17,12 @@
         input { width: calc(100% - 24px); padding: 10px; margin-bottom: 10px; border: 1px solid #ddd; border-radius: 4px; font-size: 1em; }
         #final-result-area { margin-top: 20px; width: 100%; max-width: 1110px; background: #e8f0fe; padding: 20px; border-radius: 12px; border: 2px solid #1a73e8; }
         .crypto-val { font-family: monospace; background: white; padding: 10px; border: 1px solid #ccc; word-break: break-all; margin-top: 10px; display: block; color: #d93025; font-size: 1.2em; }
+        .error-text { color: #d93025; font-weight: bold; }
     </style>
 </head>
 <body>
 
-<h1>양자 키 분배(QKD) 및 실시간 암호화 시뮬레이션</h1>
+<h1>양자 키 분배(QKD) 물리적 보안 시뮬레이션</h1>
 
 <div class="container">
     <div class="panel">
@@ -33,11 +34,11 @@
     </div>
 
     <div class="panel">
-        <h2>광섬유 (중간 통로)</h2>
-        <label style="color:red; font-weight:bold;"><input type="checkbox" id="eavesdrop-check"> 도청 시도 (관측)</label>
+        <h2>양자 채널 (광섬유)</h2>
+        <label style="color:red; font-weight:bold; cursor:pointer;"><input type="checkbox" id="eavesdrop-check"> 중간 관측 (도청 시도)</label>
         <div class="box eavesdrop-box" id="fiber-photon">광자 대기 중</div>
         <button id="forward-btn" onclick="forwardToBob()" disabled>수신자에게 재전송</button>
-        <p style="font-size:0.8em; color:#666;">※ 관측 시 양자 상태가 붕괴되어 수신측에 에러가 발생</p>
+        <p style="font-size:0.8em; color:#666;">※ 도청 시 <strong>'파동함수 붕괴'</strong>로 인해 수신 데이터가 물리적으로 변질됩니다.</p>
     </div>
 
     <div class="panel">
@@ -49,12 +50,13 @@
 </div>
 
 <div id="final-result-area" style="display:none;">
-    <h3 id="status-title" style="margin-top:0;">🔒 최종 결과</h3>
-    <div id="key-info">공유된 비밀키: <strong id="res-key"></strong></div>
+    <h3 id="status-title" style="margin-top:0;">🔒 최종 결과 분석</h3>
+    <div id="key-info">공유 비밀키 결과: <strong id="res-key"></strong></div>
     <div style="margin-top:10px;">
-        <strong>[암호화된 결과값]</strong>
+        <strong>[데이터 처리 결과]</strong>
         <code class="crypto-val" id="crypto-output"></code>
     </div>
+    <button onclick="location.reload()" style="background:#555; margin-top:15px;">다시 시작하기</button>
 </div>
 
 <script>
@@ -62,17 +64,16 @@
     let aliceData = [];
     let bobData = [];
     let currentPhoton = null;
-    let globalErrorDetected = false;
 
     function prepareAndSend() {
         if (sendCount >= 6) return;
         
         const bit = Math.floor(Math.random() * 2);
-        const basis = Math.random() < 0.5 ? '+' : 'x';
+        const basis = Math.random() < 0.5 ? '+' : 'x'; // 앨리스의 무작위 필터
         
-        currentPhoton = { bit, basis };
+        currentPhoton = { bit: bit, basis: basis, originalBit: bit };
         
-        document.getElementById('alice-photon').innerText = `준비됨: ${bit} (${basis})`;
+        document.getElementById('alice-photon').innerText = `생성됨: ${bit} (${basis})`;
         document.getElementById('fiber-photon').innerText = `광자 통과 중...`;
         document.getElementById('send-btn').disabled = true;
         document.getElementById('forward-btn').disabled = false;
@@ -86,14 +87,14 @@
         const isEavesdropped = document.getElementById('eavesdrop-check').checked;
         
         if (isEavesdropped) {
-            // 관측에 의한 붕괴 시뮬레이션: 50% 확률로 비트 반전
+            // 도청 시도: 파동함수 붕괴 발생
+            // 이브가 측정을 하면 50% 확률로 비트가 반전되거나 유지됨 (중첩 상태의 파손)
             if (Math.random() < 0.5) {
                 currentPhoton.bit = currentPhoton.bit === 0 ? 1 : 0;
             }
-            document.getElementById('fiber-photon').innerText = `붕괴됨! (Eve가 관측함)`;
-            globalErrorDetected = true; 
+            document.getElementById('fiber-photon').innerText = `⚠️ 붕괴됨 (관측 흔적 발생)`;
         } else {
-            document.getElementById('fiber-photon').innerText = `무결함 통과`;
+            document.getElementById('fiber-photon').innerText = `무결함 통과 (얽힘 유지)`;
         }
 
         receiveByBob();
@@ -102,63 +103,77 @@
     }
 
     function receiveByBob() {
-        const bobBasis = Math.random() < 0.5 ? '+' : 'x';
+        const bobBasis = Math.random() < 0.5 ? '+' : 'x'; // 밥의 무작위 필터
         let receivedBit = currentPhoton.bit;
 
-        // 필터가 다르면 50% 확률로 랜덤값 (양자 측정 원리)
+        // 양자 원리: 필터가 다르면 결과는 50/50 확률로 무작위 결정됨
         if (bobBasis !== currentPhoton.basis) {
             receivedBit = Math.random() < 0.5 ? 0 : 1;
         }
 
         const isMatch = (bobBasis === currentPhoton.basis);
-        bobData.push({ bit: receivedBit, basis: bobBasis, match: isMatch, originalBit: currentPhoton.bit });
+        bobData.push({ 
+            bit: receivedBit, 
+            basis: bobBasis, 
+            match: isMatch, 
+            originalBit: currentPhoton.originalBit 
+        });
 
         document.getElementById('bob-photon').innerText = `수신: ${receivedBit} (${bobBasis})`;
-        log('bob-log', `${sendCount}회: ${receivedBit}(${bobBasis}) [${isMatch ? '일치' : '불일치'}]`);
+        log('bob-log', `${sendCount}회: ${receivedBit}(${bobBasis}) [${isMatch ? '필터일치' : '불일치'}]`);
 
         if (sendCount === 6) finalize();
     }
 
     function finalize() {
-        let finalKey = "";
-        let finalError = false;
+        let finalKeyBits = [];
+        let errorDetected = false;
 
+        // 1. 필터 대조 단계
         bobData.forEach((d) => {
             if (d.match) {
-                finalKey += d.bit;
-                // 필터가 맞았는데 값이 다르면 도청 흔적임
-                if (d.bit !== d.originalBit) finalError = true;
+                finalKeyBits.push(d.bit);
+                // 2. 비트 대조 단계 (에러 체크)
+                // 필터가 맞았는데도 값이 다르다면 100% 도청에 의한 붕괴임
+                if (d.bit !== d.originalBit) {
+                    errorDetected = true;
+                }
             }
         });
 
-        const plainText = document.getElementById('plain-input').value || "HELLO";
         const resultArea = document.getElementById('final-result-area');
         resultArea.style.display = "block";
 
-        if (finalError || finalKey === "") {
-            document.getElementById('status-title').innerText = "X 보안 경고: 도청 감지";
-            document.getElementById('res-key').innerText = "폐기됨";
-            document.getElementById('crypto-output').innerText = "통신이 안전하지 않아 암호화를 중단했습니다.";
+        if (errorDetected) {
+            // 물리적 변조 감지 로직
+            document.getElementById('status-title').innerHTML = "<span class='error-text'>❌ 물리적 보안 경고: 도청 감지됨</span>";
+            document.getElementById('res-key').innerText = "폐기 (보안 위험)";
+            document.getElementById('crypto-output').innerHTML = "필터 일치 구간에서 비트 불일치가 발견되었습니다.<br><strong>원인:</strong> 중간 관측자에 의한 파동함수 붕괴";
+        } else if (finalKeyBits.length === 0) {
+            document.getElementById('status-title').innerText = "⚠️ 키 생성 실패";
+            document.getElementById('res-key').innerText = "일치 필터 없음";
+            document.getElementById('crypto-output').innerText = "필터가 한 번도 일치하지 않아 키를 생성할 수 없습니다. 다시 시도하세요.";
         } else {
-            document.getElementById('status-title').innerText = "O 암호화 성공";
+            // 성공 로직
+            const finalKey = finalKeyBits.join("");
+            document.getElementById('status-title').innerText = "✅ 안전한 키 공유 성공";
             document.getElementById('res-key').innerText = finalKey;
             
-            // 실제 암호화 수행 (간이 XOR + Base64)
+            const plainText = document.getElementById('plain-input').value || "HELLO QUANTUM";
             const encrypted = simpleEncrypt(plainText, finalKey);
             document.getElementById('crypto-output').innerText = encrypted;
-            log('bob-log', `성공: 암호문 생성 완료`);
+            log('bob-log', `성공: ${finalKey} 키로 암호화 완료`);
         }
     }
 
-    // 간단한 XOR 암호화 함수
     function simpleEncrypt(text, key) {
         let result = "";
         for (let i = 0; i < text.length; i++) {
-            // 아스키 코드와 키를 조합
+            // XOR 연산으로 암호화
             let charCode = text.charCodeAt(i) ^ parseInt(key, 2);
             result += String.fromCharCode(charCode);
         }
-        return btoa(result); // 보기 좋게 Base64로 변환
+        return btoa(result); // Base64 출력
     }
 
     function log(id, msg) {
