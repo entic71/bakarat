@@ -2,48 +2,58 @@
 <html lang="ko">
 <head>
     <meta charset="UTF-8">
-    <title>양자 키 분배 시뮬</title>
+    <title> 양자 키 분배 시뮬레이터</title>
     <style>
         body { font-family: 'Pretendard', sans-serif; background: #f0f2f5; display: flex; flex-direction: column; align-items: center; padding: 20px; }
         .container { display: flex; gap: 20px; max-width: 1200px; }
         .panel { background: white; border-radius: 12px; padding: 20px; width: 350px; box-shadow: 0 4px 6px rgba(0,0,0,0.1); }
         h2 { border-bottom: 2px solid #333; padding-bottom: 10px; color: #1a73e8; }
-        .status { margin-top: 10px; font-size: 0.9em; color: #666; }
-        button { width: 100%; padding: 10px; margin: 10px 0; cursor: pointer; border-radius: 6px; border: none; background: #1a73e8; color: white; font-weight: bold; }
-        button:disabled { background: #ccc; }
-        .box { border: 2px dashed #999; padding: 15px; text-align: center; margin: 10px 0; font-weight: bold; min-height: 20px; }
+        button { width: 100%; padding: 10px; margin: 10px 0; cursor: pointer; border-radius: 6px; border: none; background: #1a73e8; color: white; font-weight: bold; transition: 0.2s; }
+        button:hover { background: #1557b0; }
+        button:disabled { background: #ccc; cursor: not-allowed; }
+        .box { border: 2px dashed #999; padding: 15px; text-align: center; margin: 10px 0; font-weight: bold; min-height: 20px; border-radius: 8px; }
         .eavesdrop-box { background: #fff3f3; border-color: #ff4d4d; }
-        .result-log { height: 150px; overflow-y: auto; background: #333; color: #0f0; padding: 10px; font-family: monospace; font-size: 0.85em; border-radius: 4px; }
-        input { width: calc(100% - 22px); padding: 10px; margin-bottom: 10px; border: 1px solid #ddd; border-radius: 4px; }
+        .result-log { height: 150px; overflow-y: auto; background: #333; color: #0f0; padding: 10px; font-family: monospace; font-size: 0.85em; border-radius: 4px; margin-top: 10px; }
+        input { width: calc(100% - 24px); padding: 10px; margin-bottom: 10px; border: 1px solid #ddd; border-radius: 4px; font-size: 1em; }
+        #final-result-area { margin-top: 20px; width: 100%; max-width: 1110px; background: #e8f0fe; padding: 20px; border-radius: 12px; border: 2px solid #1a73e8; }
+        .crypto-val { font-family: monospace; background: white; padding: 10px; border: 1px solid #ccc; word-break: break-all; margin-top: 10px; display: block; color: #d93025; font-size: 1.2em; }
     </style>
 </head>
 <body>
 
-<h1>미토스 쇼크 대응: 양자 키 분배 시뮬레이션</h1>
+<h1>양자 키 분배(QKD) 및 실시간 암호화 시뮬레이션</h1>
 
 <div class="container">
-    <div class="panel" id="alice">
+    <div class="panel">
         <h2>송신자 (Alice)</h2>
-        <p>전송 횟수: <span id="send-count">0</span> / 6</p>
-        <div class="box" id="alice-photon">광자 준비 중...</div>
-        <button onclick="prepareAndSend()">도청 사이트로 전송</button>
+        <p>전송 진행: <strong><span id="send-count">0</span> / 6</strong></p>
+        <div class="box" id="alice-photon">광자 생성 대기 중</div>
+        <button id="send-btn" onclick="prepareAndSend()">도청 사이트로 전송</button>
         <div class="result-log" id="alice-log"></div>
     </div>
 
-    <div class="panel" id="eve">
-        <h2>광섬유 (Eve 침투망)</h2>
-        <label><input type="checkbox" id="eavesdrop-check"> <strong>도청하기 (관측 시도)</strong></label>
-        <div class="box eavesdrop-box" id="fiber-photon">광자 대기 중...</div>
-        <button id="forward-btn" onclick="forwardToBob()" disabled>수신자에게 전송</button>
-        <div class="status">※ 도청 시 얽힘 상태가 붕괴</div>
+    <div class="panel">
+        <h2>광섬유 (중간 통로)</h2>
+        <label style="color:red; font-weight:bold;"><input type="checkbox" id="eavesdrop-check"> 도청 시도 (관측)</label>
+        <div class="box eavesdrop-box" id="fiber-photon">광자 대기 중</div>
+        <button id="forward-btn" onclick="forwardToBob()" disabled>수신자에게 재전송</button>
+        <p style="font-size:0.8em; color:#666;">※ 관측 시 양자 상태가 붕괴되어 수신측에 에러가 발생</p>
     </div>
 
-    <div class="panel" id="bob">
+    <div class="panel">
         <h2>수신자 (Bob)</h2>
-        <input type="text" id="plain-text" placeholder="암호화할 값 입력 (예: 기밀문서)">
-        <div class="box" id="bob-photon">데이터 대기 중...</div>
+        <input type="text" id="plain-input" placeholder="암호화할 평문 입력">
+        <div class="box" id="bob-photon">데이터 대기 중</div>
         <div class="result-log" id="bob-log"></div>
-        <div id="final-key" style="margin-top:10px; font-weight:bold; color:red;"></div>
+    </div>
+</div>
+
+<div id="final-result-area" style="display:none;">
+    <h3 id="status-title" style="margin-top:0;">🔒 최종 결과</h3>
+    <div id="key-info">공유된 비밀키: <strong id="res-key"></strong></div>
+    <div style="margin-top:10px;">
+        <strong>[암호화된 결과값]</strong>
+        <code class="crypto-val" id="crypto-output"></code>
     </div>
 </div>
 
@@ -52,93 +62,108 @@
     let aliceData = [];
     let bobData = [];
     let currentPhoton = null;
-    let isEavesdropped = false;
+    let globalErrorDetected = false;
 
-    // 1. 송신자 로직
     function prepareAndSend() {
-        if (sendCount >= 6) return alert("6회 전송 완료!");
+        if (sendCount >= 6) return;
         
-        const bit = Math.floor(Math.random() * 2); // 0 또는 1
-        const basis = Math.random() < 0.5 ? '+' : 'x'; // 필터 무작위 결정
+        const bit = Math.floor(Math.random() * 2);
+        const basis = Math.random() < 0.5 ? '+' : 'x';
         
-        currentPhoton = { bit, basis, state: "stable" };
+        currentPhoton = { bit, basis };
         
-        document.getElementById('alice-photon').innerText = `전송 중: ${bit} (${basis})`;
-        document.getElementById('fiber-photon').innerText = `광자 통과 중 (얽힘 상태)`;
+        document.getElementById('alice-photon').innerText = `준비됨: ${bit} (${basis})`;
+        document.getElementById('fiber-photon').innerText = `광자 통과 중...`;
+        document.getElementById('send-btn').disabled = true;
         document.getElementById('forward-btn').disabled = false;
         
         sendCount++;
         document.getElementById('send-count').innerText = sendCount;
-        log('alice-log', `${sendCount}회: ${bit}(${basis}) 전송`);
+        log('alice-log', `${sendCount}회: ${bit}(${basis}) 송신`);
     }
 
-    // 2. 도청자 로직
     function forwardToBob() {
-        const check = document.getElementById('eavesdrop-check').checked;
+        const isEavesdropped = document.getElementById('eavesdrop-check').checked;
         
-        if (check) {
-            // 관측 발생 -> 붕괴!
-            currentPhoton.state = "collapsed";
-            // 도청자가 측정을 시도하면 50% 확률로 값이 왜곡됨 (물리적 교란)
+        if (isEavesdropped) {
+            // 관측에 의한 붕괴 시뮬레이션: 50% 확률로 비트 반전
             if (Math.random() < 0.5) {
                 currentPhoton.bit = currentPhoton.bit === 0 ? 1 : 0;
             }
-            document.getElementById('fiber-photon').innerText = `붕괴됨! 관측값: ${currentPhoton.bit}`;
-            isEavesdropped = true;
+            document.getElementById('fiber-photon').innerText = `붕괴됨! (Eve가 관측함)`;
+            globalErrorDetected = true; 
         } else {
             document.getElementById('fiber-photon').innerText = `무결함 통과`;
-            isEavesdropped = false;
         }
 
         receiveByBob();
         document.getElementById('forward-btn').disabled = true;
+        if(sendCount < 6) document.getElementById('send-btn').disabled = false;
     }
 
-    // 3. 수신자 로직
     function receiveByBob() {
         const bobBasis = Math.random() < 0.5 ? '+' : 'x';
         let receivedBit = currentPhoton.bit;
 
-        // 필터가 다르면 50% 확률로 0 또는 1이 무작위로 나옴
+        // 필터가 다르면 50% 확률로 랜덤값 (양자 측정 원리)
         if (bobBasis !== currentPhoton.basis) {
             receivedBit = Math.random() < 0.5 ? 0 : 1;
         }
 
         const isMatch = (bobBasis === currentPhoton.basis);
-        
-        bobData.push({ bit: receivedBit, basis: bobBasis, match: isMatch, error: (isMatch && isEavesdropped && Math.random() < 0.5) });
+        bobData.push({ bit: receivedBit, basis: bobBasis, match: isMatch, originalBit: currentPhoton.bit });
 
         document.getElementById('bob-photon').innerText = `수신: ${receivedBit} (${bobBasis})`;
-        log('bob-log', `${sendCount}회: ${receivedBit}(${bobBasis}) 수신 [${isMatch ? '필터일치' : '불일치'}]`);
+        log('bob-log', `${sendCount}회: ${receivedBit}(${bobBasis}) [${isMatch ? '일치' : '불일치'}]`);
 
         if (sendCount === 6) finalize();
     }
 
     function finalize() {
-        // 필터가 일치하는 것들만 모아서 키 생성
         let finalKey = "";
-        let errorDetected = false;
+        let finalError = false;
 
-        bobData.forEach((data, index) => {
-            if (data.match) {
-                finalKey += data.bit;
-                // 도청으로 인한 에러 검사 (물리적 흔적)
-                if (isEavesdropped) errorDetected = true;
+        bobData.forEach((d) => {
+            if (d.match) {
+                finalKey += d.bit;
+                // 필터가 맞았는데 값이 다르면 도청 흔적임
+                if (d.bit !== d.originalBit) finalError = true;
             }
         });
 
-        const plainText = document.getElementById('plain-text').value || "No Data";
-        const statusText = errorDetected ? "⚠️ 도청 감지! 키 폐기됨." : `✅ 생성된 키: ${finalKey}`;
-        document.getElementById('final-key').innerText = statusText;
-        
-        if (!errorDetected) {
-            log('bob-log', `최종 암호문: ${btoa(plainText + finalKey).substring(0,10)}...`);
+        const plainText = document.getElementById('plain-input').value || "HELLO";
+        const resultArea = document.getElementById('final-result-area');
+        resultArea.style.display = "block";
+
+        if (finalError || finalKey === "") {
+            document.getElementById('status-title').innerText = "X 보안 경고: 도청 감지";
+            document.getElementById('res-key').innerText = "폐기됨";
+            document.getElementById('crypto-output').innerText = "통신이 안전하지 않아 암호화를 중단했습니다.";
+        } else {
+            document.getElementById('status-title').innerText = "O 암호화 성공";
+            document.getElementById('res-key').innerText = finalKey;
+            
+            // 실제 암호화 수행 (간이 XOR + Base64)
+            const encrypted = simpleEncrypt(plainText, finalKey);
+            document.getElementById('crypto-output').innerText = encrypted;
+            log('bob-log', `성공: 암호문 생성 완료`);
         }
+    }
+
+    // 간단한 XOR 암호화 함수
+    function simpleEncrypt(text, key) {
+        let result = "";
+        for (let i = 0; i < text.length; i++) {
+            // 아스키 코드와 키를 조합
+            let charCode = text.charCodeAt(i) ^ parseInt(key, 2);
+            result += String.fromCharCode(charCode);
+        }
+        return btoa(result); // 보기 좋게 Base64로 변환
     }
 
     function log(id, msg) {
         const el = document.getElementById(id);
-        el.innerHTML += msg + "<br>";
+        el.innerHTML += "> " + msg + "<br>";
         el.scrollTop = el.scrollHeight;
     }
 </script>
